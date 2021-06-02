@@ -55,6 +55,10 @@ export default class Changelog {
     // Step 5: Fill in packages (local)
     await this.fillInPackages(commitInfos);
 
+    // Step 6: Fill in sections (local)
+    await this.fillInSections(commitInfos);
+
+    console.log(commitInfos.forEach(info => console.log(info.categories, info.section)));
     return commitInfos;
   }
 
@@ -220,13 +224,23 @@ export default class Changelog {
         commits,
         async (commit: CommitInfo) => {
           commit.packages = await this.getListOfUniquePackages(commit.commitSHA);
-
           progressBar.tick();
         },
         { concurrency: 5 }
       );
     } finally {
       progressBar.terminate();
+    }
+  }
+
+  private async fillInSections(commits: CommitInfo[]) {
+    for (const commit of commits) {
+      if (!commit.githubIssue || !commit.githubIssue.labels) continue;
+
+      const labels = commit.githubIssue.labels.map(label => label.name.toLowerCase());
+
+      const filteredSections = labels.filter(label => Object.keys(this.config.sections).includes(label));
+      commit.section = filteredSections.length == 0 ? this.config.sections.default : filteredSections[0];
     }
   }
 
