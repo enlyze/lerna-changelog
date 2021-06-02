@@ -9,6 +9,7 @@ export interface Configuration {
   repo: string;
   rootPath: string;
   labels: { [key: string]: string };
+  sections: { [key: string]: string };
   ignoreCommitters: string[];
   cacheDir?: string;
   nextVersion: string | undefined;
@@ -31,7 +32,7 @@ export function fromPath(rootPath: string, options: ConfigLoaderOptions = {}): C
   let config = fromPackageConfig(rootPath) || fromLernaConfig(rootPath) || {};
 
   // Step 2: fill partial config with defaults
-  let { repo, nextVersion, labels, cacheDir, ignoreCommitters } = config;
+  let { repo, nextVersion, labels, cacheDir, ignoreCommitters, sections } = config;
 
   if (!repo) {
     repo = findRepo(rootPath);
@@ -58,6 +59,13 @@ export function fromPath(rootPath: string, options: ConfigLoaderOptions = {}): C
     };
   }
 
+  if (!sections) {
+    sections = {
+      changes: "",
+      default: "changes",
+    };
+  }
+
   if (!ignoreCommitters) {
     ignoreCommitters = [
       "dependabot-bot",
@@ -74,6 +82,7 @@ export function fromPath(rootPath: string, options: ConfigLoaderOptions = {}): C
     nextVersion,
     rootPath,
     labels,
+    sections,
     ignoreCommitters,
     cacheDir,
   };

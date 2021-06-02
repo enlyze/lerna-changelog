@@ -9,6 +9,7 @@ export interface CommitInfo {
   githubIssue?: GitHubIssueResponse;
   categories?: string[];
   packages?: string[];
+  section: string;
 }
 
 export interface Release {
