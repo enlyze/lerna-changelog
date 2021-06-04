@@ -25,9 +25,18 @@ export default class Changelog {
     this.github = new GithubAPI(this.config);
     this.renderer = new MarkdownRenderer({
       categories: Object.keys(this.config.labels).map(key => this.config.labels[key]),
+      sections: Object.keys(this.config.sections)
+        .map(key => this.config.sections[key])
+        .filter(onlyUnique),
       baseIssueUrl: this.github.getBaseIssueUrl(this.config.repo),
       unreleasedName: this.config.nextVersion || "Unreleased",
     });
+
+    console.log(
+      Object.keys(this.config.sections)
+        .map(key => this.config.sections[key])
+        .filter(onlyUnique)
+    );
   }
 
   public async createMarkdown(options: Options = {}) {
@@ -240,7 +249,7 @@ export default class Changelog {
       const labels = commit.githubIssue.labels.map(label => label.name.toLowerCase());
 
       const filteredSections = labels.filter(label => Object.keys(this.config.sections).includes(label));
-      commit.section = filteredSections.length == 0 ? this.config.sections.default : filteredSections[0];
+      commit.section = filteredSections.length == 0 ? "default" : filteredSections[0];
     }
   }
 

@@ -61,8 +61,7 @@ export function fromPath(rootPath: string, options: ConfigLoaderOptions = {}): C
 
   if (!sections) {
     sections = {
-      changes: "",
-      default: "changes",
+      default: "",
     };
   }
 
