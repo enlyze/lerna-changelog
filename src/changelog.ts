@@ -31,12 +31,6 @@ export default class Changelog {
       baseIssueUrl: this.github.getBaseIssueUrl(this.config.repo),
       unreleasedName: this.config.nextVersion || "Unreleased",
     });
-
-    console.log(
-      Object.keys(this.config.sections)
-        .map(key => this.config.sections[key])
-        .filter(onlyUnique)
-    );
   }
 
   public async createMarkdown(options: Options = {}) {
@@ -67,7 +61,6 @@ export default class Changelog {
     // Step 6: Fill in sections (local)
     await this.fillInSections(commitInfos);
 
-    console.log(commitInfos.forEach(info => console.log(info.categories, info.section)));
     return commitInfos;
   }
 
