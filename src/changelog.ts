@@ -25,9 +25,7 @@ export default class Changelog {
     this.github = new GithubAPI(this.config);
     this.renderer = new MarkdownRenderer({
       categories: Object.keys(this.config.labels).map(key => this.config.labels[key]),
-      sections: Object.keys(this.config.sections)
-        .map(key => this.config.sections[key])
-        .filter(onlyUnique),
+      sections: this.config.sections,
       baseIssueUrl: this.github.getBaseIssueUrl(this.config.repo),
       unreleasedName: this.config.nextVersion || "Unreleased",
     });
