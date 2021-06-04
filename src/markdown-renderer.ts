@@ -3,14 +3,21 @@ import { CommitInfo, Release } from "./interfaces";
 
 const UNRELEASED_TAG = "___unreleased___";
 const COMMIT_FIX_REGEX = /(fix|close|resolve)(e?s|e?d)? [T#](\d+)/i;
+const MARKDOWN_IDENTATION = "&nbsp;";
 
 interface CategoryInfo {
   name: string | undefined;
   commits: CommitInfo[];
 }
 
+interface SectionInfo {
+  name: string;
+  categories: CategoryInfo[];
+}
+
 interface Options {
   categories: string[];
+  sections: { [key: string]: string };
   baseIssueUrl: string;
   unreleasedName: string;
 }
@@ -24,7 +31,7 @@ export default class MarkdownRenderer {
 
   public renderMarkdown(releases: Release[]) {
     let output = releases
-      .map(release => this.renderRelease(release))
+      .map(release => this.renderReleaseBySectionAndCategory(release))
       .filter(Boolean)
       .join("\n\n\n");
     return output ? `\n${output}` : "";
@@ -53,6 +60,33 @@ export default class MarkdownRenderer {
     }
 
     if (release.contributors?.length) {
+      markdown += `\n\n${this.renderContributorList(release.contributors)}`;
+    }
+
+    return markdown;
+  }
+
+  public renderReleaseBySectionAndCategory(release: Release) {
+    // Group commits in release by section
+    const sections = this.groupBySection(release.commits);
+
+    // Skip this iteration if there are no commits available for the release
+    if (sections.length === 0) return this.renderRelease(release);
+
+    const releaseTitle = release.name === UNRELEASED_TAG ? this.options.unreleasedName : release.name;
+
+    let markdown = `## ${releaseTitle} (${release.date})`;
+
+    for (const section of sections) {
+      markdown += `\n\n### ${section.name}`;
+
+      for (const category of section.categories) {
+        markdown += `\n\n#### ${MARKDOWN_IDENTATION} ${category.name}\n`;
+        markdown += this.renderContributionList(category.commits);
+      }
+    }
+
+    if (release.contributors) {
       markdown += `\n\n${this.renderContributorList(release.contributors)}`;
     }
 
@@ -134,6 +168,23 @@ export default class MarkdownRenderer {
   }
 
   private groupByCategory(allCommits: CommitInfo[]): CategoryInfo[] {
+    return this.options.categories.map(name => {
+      // Keep only the commits that have a matching label with the one
+      // provided in the lerna.json config.
+      let commits = allCommits.filter(commit => commit.categories && commit.categories.indexOf(name) !== -1);
+
+      return { name, commits };
+    });
+  }
+
+  private groupBySection(allCommits: CommitInfo[]): SectionInfo[] {
+    return Object.keys(this.options.sections).map(key => {
+      let commits = allCommits.filter(commit => commit.section && commit.section === key);
+      return { name: this.options.sections[key], categories: this.groupByCategory(commits) };
+    });
+  }
+
+  private groupByCategoryAndSection(allCommits: CommitInfo[]): CategoryInfo[] {
     return this.options.categories.map(name => {
       // Keep only the commits that have a matching label with the one
       // provided in the lerna.json config.
