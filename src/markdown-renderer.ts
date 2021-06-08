@@ -30,6 +30,9 @@ export default class MarkdownRenderer {
   }
 
   public renderMarkdown(releases: Release[]) {
+    // Render title and description
+
+    // Render sections and categories
     let output = releases
       .map(release => this.renderReleaseBySectionAndCategory(release))
       .filter(Boolean)
@@ -46,7 +49,7 @@ export default class MarkdownRenderer {
     if (categoriesWithCommits.length === 0) return "";
 
     const releaseTitle = release.name === UNRELEASED_TAG ? this.options.unreleasedName : release.name;
-
+    
     let markdown = `## ${releaseTitle} (${release.date})`;
 
     for (const category of categoriesWithCommits) {
@@ -67,11 +70,13 @@ export default class MarkdownRenderer {
   }
 
   public renderReleaseBySectionAndCategory(release: Release) {
+    // Filter out commits non merge commits
+    const filteredCommits = release.commits.filter(commit => commit.issueNumber);
     // Group commits in release by section
-    const sections = this.groupBySection(release.commits);
+    const sections = this.groupBySection(filteredCommits);
 
-    // Skip this iteration if there are no commits available for the release
-    if (sections.length === 0) return this.renderRelease(release);
+    // Render normally if there are no sections
+    if (!sections || sections.length === 0) return this.renderRelease(release);
 
     const releaseTitle = release.name === UNRELEASED_TAG ? this.options.unreleasedName : release.name;
 
@@ -81,8 +86,8 @@ export default class MarkdownRenderer {
       markdown += `\n\n### ${section.name}`;
 
       for (const category of section.categories) {
-        markdown += `\n\n#### ${MARKDOWN_IDENTATION} ${category.name}\n`;
-        markdown += this.renderContributionList(category.commits);
+        const categoryCommits = this.renderContributionList(category.commits);
+        if (categoryCommits !== "") markdown += `\n\n#### ${MARKDOWN_IDENTATION} ${category.name}\n${categoryCommits}`;
       }
     }
 
@@ -178,19 +183,17 @@ export default class MarkdownRenderer {
   }
 
   private groupBySection(allCommits: CommitInfo[]): SectionInfo[] {
-    return Object.keys(this.options.sections).map(key => {
-      let commits = allCommits.filter(commit => commit.section && commit.section === key);
-      return { name: this.options.sections[key], categories: this.groupByCategory(commits) };
-    });
-  }
+    // This assumes that all commits have a section
+    // Passed commits should be filtered out
+    // Group commits by sectionName
+    const groupedBySectionName = allCommits.reduce((acc: { [key: string]: CommitInfo[] }, commit) => {
+      acc[this.options.sections[commit.section]] = [...(acc[commit.section] || []), commit];
+      return acc;
+    }, {});
 
-  private groupByCategoryAndSection(allCommits: CommitInfo[]): CategoryInfo[] {
-    return this.options.categories.map(name => {
-      // Keep only the commits that have a matching label with the one
-      // provided in the lerna.json config.
-      let commits = allCommits.filter(commit => commit.categories && commit.categories.indexOf(name) !== -1);
-
-      return { name, commits };
-    });
+    return Object.keys(groupedBySectionName).map(key => ({
+      name: key,
+      categories: this.groupByCategory(groupedBySectionName[key]),
+    }));
   }
 }
