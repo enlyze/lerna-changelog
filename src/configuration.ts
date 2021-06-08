@@ -12,8 +12,10 @@ export interface Configuration {
   sections: { [key: string]: string };
   ignoreCommitters: string[];
   cacheDir?: string;
-  nextVersion: string | undefined;
+  nextVersion: string;
   nextVersionFromMetadata?: boolean;
+  title: string;
+  description: string;
 }
 
 export interface ConfigLoaderOptions {
@@ -32,7 +34,7 @@ export function fromPath(rootPath: string, options: ConfigLoaderOptions = {}): C
   let config = fromPackageConfig(rootPath) || fromLernaConfig(rootPath) || {};
 
   // Step 2: fill partial config with defaults
-  let { repo, nextVersion, labels, cacheDir, ignoreCommitters, sections } = config;
+  let { repo, nextVersion, labels, cacheDir, ignoreCommitters, sections, title, description } = config;
 
   if (!repo) {
     repo = findRepo(rootPath);
@@ -76,6 +78,18 @@ export function fromPath(rootPath: string, options: ConfigLoaderOptions = {}): C
     ];
   }
 
+  if (!nextVersion) {
+    nextVersion = "Unreleased";
+  }
+
+  if (!title) {
+    title = "Changelog";
+  }
+
+  if (!description) {
+    description = "All notable changes to this project will be documented in this file.";
+  }
+
   return {
     repo,
     nextVersion,
@@ -84,6 +98,8 @@ export function fromPath(rootPath: string, options: ConfigLoaderOptions = {}): C
     sections,
     ignoreCommitters,
     cacheDir,
+    title,
+    description,
   };
 }
 
