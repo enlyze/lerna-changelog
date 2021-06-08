@@ -20,6 +20,8 @@ interface Options {
   sections: { [key: string]: string };
   baseIssueUrl: string;
   unreleasedName: string;
+  title: string;
+  description: string;
 }
 
 export default class MarkdownRenderer {
@@ -31,9 +33,9 @@ export default class MarkdownRenderer {
 
   public renderMarkdown(releases: Release[]) {
     // Render title and description
-
+    let output = `# ${this.options.title}\n\n${this.options.description}\n\n`;
     // Render sections and categories
-    let output = releases
+    output += releases
       .map(release => this.renderReleaseBySectionAndCategory(release))
       .filter(Boolean)
       .join("\n\n\n");
@@ -49,7 +51,7 @@ export default class MarkdownRenderer {
     if (categoriesWithCommits.length === 0) return "";
 
     const releaseTitle = release.name === UNRELEASED_TAG ? this.options.unreleasedName : release.name;
-    
+
     let markdown = `## ${releaseTitle} (${release.date})`;
 
     for (const category of categoriesWithCommits) {

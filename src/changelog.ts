@@ -27,7 +27,9 @@ export default class Changelog {
       categories: Object.keys(this.config.labels).map(key => this.config.labels[key]),
       sections: this.config.sections,
       baseIssueUrl: this.github.getBaseIssueUrl(this.config.repo),
-      unreleasedName: this.config.nextVersion || "Unreleased",
+      unreleasedName: this.config.nextVersion,
+      title: this.config.title,
+      description: this.config.description,
     });
   }
 
