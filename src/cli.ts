@@ -72,7 +72,7 @@ export async function run() {
       repo: argv.repo,
     });
 
-    if (argv["next-version"] !== NEXT_VERSION_DEFAULT) {
+    if (!config.nextVersion && argv["next-version"]) {
       config.nextVersion = argv["next-version"];
     }
 
