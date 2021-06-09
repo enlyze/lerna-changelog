@@ -27,6 +27,8 @@
     "fix": "yarn lint -- --fix",
     "lint": "eslint src --ext ts --format stylish",
     "prepack": "yarn build",
+    "prepublish": "yarn build",
+    "prepare": "yarn build",
     "prettier": "prettier --write 'src/**/*.ts'",
     "release": "release-it",
     "test": "jest",
