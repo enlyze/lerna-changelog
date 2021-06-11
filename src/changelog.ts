@@ -25,8 +25,11 @@ export default class Changelog {
     this.github = new GithubAPI(this.config);
     this.renderer = new MarkdownRenderer({
       categories: Object.keys(this.config.labels).map(key => this.config.labels[key]),
+      sections: this.config.sections,
       baseIssueUrl: this.github.getBaseIssueUrl(this.config.repo),
-      unreleasedName: this.config.nextVersion || "Unreleased",
+      unreleasedName: this.config.nextVersion,
+      title: this.config.title,
+      description: this.config.description,
     });
   }
 
@@ -54,6 +57,9 @@ export default class Changelog {
 
     // Step 5: Fill in packages (local)
     await this.fillInPackages(commitInfos);
+
+    // Step 6: Fill in sections (local)
+    await this.fillInSections(commitInfos);
 
     return commitInfos;
   }
@@ -220,13 +226,23 @@ export default class Changelog {
         commits,
         async (commit: CommitInfo) => {
           commit.packages = await this.getListOfUniquePackages(commit.commitSHA);
-
           progressBar.tick();
         },
         { concurrency: 5 }
       );
     } finally {
       progressBar.terminate();
+    }
+  }
+
+  private async fillInSections(commits: CommitInfo[]) {
+    for (const commit of commits) {
+      if (!commit.githubIssue || !commit.githubIssue.labels) continue;
+
+      const labels = commit.githubIssue.labels.map(label => label.name.toLowerCase());
+
+      const filteredSections = labels.filter(label => Object.keys(this.config.sections).includes(label));
+      commit.section = filteredSections.length == 0 ? "default" : filteredSections[0];
     }
   }
 
