@@ -75,7 +75,7 @@ export default class MarkdownRenderer {
     // Filter out commits non merge commits
     const filteredCommits = release.commits.filter(commit => commit.issueNumber);
     // Group commits in release by section
-    const sections = this.groupBySection(filteredCommits);
+    const sections = this.groupBySectionAndCategory(filteredCommits);
 
     // Render normally if there are no sections
     if (!sections || sections.length === 0) return this.renderRelease(release);
@@ -184,18 +184,25 @@ export default class MarkdownRenderer {
     });
   }
 
-  private groupBySection(allCommits: CommitInfo[]): SectionInfo[] {
+  private groupBySectionAndCategory(allCommits: CommitInfo[]): SectionInfo[] {
+    // Group by section first
     // This assumes that all commits have a section
     // Passed commits should be filtered out
     // Group commits by sectionName
-    const groupedBySectionName = allCommits.reduce((acc: { [key: string]: CommitInfo[] }, commit) => {
-      acc[this.options.sections[commit.section]] = [...(acc[commit.section] || []), commit];
-      return acc;
-    }, {});
+    const groupedBySection = Object.keys(this.options.sections)
+      .filter(section => section !== "default")
+      .map(section => {
+        // Keep only the commits that have a matching section label with the ones
+        // provided in package.json.
+        let commits = allCommits.filter(commit => commit.section && commit.section == this.options.sections[section]);
 
-    return Object.keys(groupedBySectionName).map(key => ({
-      name: key,
-      categories: this.groupByCategory(groupedBySectionName[key]),
+        return { name: this.options.sections[section], commits };
+      });
+
+    // Group section commits by category
+    return groupedBySection.map(section => ({
+      name: section.name,
+      categories: this.groupByCategory(section.commits),
     }));
   }
 }
