@@ -84,16 +84,14 @@ export default class MarkdownRenderer {
 
     let markdown = `## ${releaseTitle} (${release.date})`;
 
-    console.log(JSON.stringify(sections));
-    // for (const section of sections) {
-    //   markdown += `\n\n### ${section.name}`;
-    //   con
-    //   for (const category of section.categories) {
-    //     console.log(`${category.name} ---> ${category.commits}`);
-    //     // const categoryCommits = this.renderContributionList(category.commits);
-    //     // if (categoryCommits !== "") markdown += `\n\n#### ${MARKDOWN_IDENTATION} ${category.name}\n${categoryCommits}`;
-    //   }
-    // }
+    for (const section of sections) {
+      markdown += `\n\n### ${section.name}`;
+
+      for (const category of section.categories) {
+        const categoryCommits = this.renderContributionList(category.commits);
+        if (categoryCommits !== "") markdown += `\n\n#### ${MARKDOWN_IDENTATION} ${category.name}\n${categoryCommits}`;
+      }
+    }
 
     if (release.contributors) {
       markdown += `\n\n${this.renderContributorList(release.contributors)}`;
@@ -204,9 +202,11 @@ export default class MarkdownRenderer {
       });
 
     // Group section commits by category
-    return groupedBySection.map(section => ({
-      name: section.name,
-      categories: this.groupByCategory(section.commits),
-    }));
+    return groupedBySection
+      .map(section => ({
+        name: section.name,
+        categories: this.groupByCategory(section.commits),
+      }))
+      .filter(section => section.categories.length);
   }
 }
