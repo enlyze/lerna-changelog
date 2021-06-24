@@ -3,6 +3,7 @@ import { CommitInfo, Release } from "./interfaces";
 
 const UNRELEASED_TAG = "___unreleased___";
 const COMMIT_FIX_REGEX = /(fix|close|resolve)(e?s|e?d)? [T#](\d+)/i;
+const PR_TAG_REGEX = /\[.*\]\s?/g;
 const MARKDOWN_IDENTATION = "&nbsp;";
 
 interface CategoryInfo {
@@ -146,7 +147,9 @@ export default class MarkdownRenderer {
       }
 
       if (issue.title && issue.title.match(COMMIT_FIX_REGEX)) {
-        issue.title = issue.title.replace(COMMIT_FIX_REGEX, `Closes [#$3](${this.options.baseIssueUrl}$3)`);
+        issue.title = issue.title
+          .replace(COMMIT_FIX_REGEX, `Closes [#$3](${this.options.baseIssueUrl}$3)`)
+          .replace(PR_TAG_REGEX, "");
       }
 
       markdown += `${issue.title} ([@${issue.user.login}](${issue.user.html_url}))`;
