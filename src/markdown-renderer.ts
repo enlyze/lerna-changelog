@@ -84,14 +84,16 @@ export default class MarkdownRenderer {
 
     let markdown = `## ${releaseTitle} (${release.date})`;
 
-    for (const section of sections) {
-      markdown += `\n\n### ${section.name}`;
-
-      for (const category of section.categories) {
-        const categoryCommits = this.renderContributionList(category.commits);
-        if (categoryCommits !== "") markdown += `\n\n#### ${MARKDOWN_IDENTATION} ${category.name}\n${categoryCommits}`;
-      }
-    }
+    console.log(JSON.stringify(sections));
+    // for (const section of sections) {
+    //   markdown += `\n\n### ${section.name}`;
+    //   con
+    //   for (const category of section.categories) {
+    //     console.log(`${category.name} ---> ${category.commits}`);
+    //     // const categoryCommits = this.renderContributionList(category.commits);
+    //     // if (categoryCommits !== "") markdown += `\n\n#### ${MARKDOWN_IDENTATION} ${category.name}\n${categoryCommits}`;
+    //   }
+    // }
 
     if (release.contributors) {
       markdown += `\n\n${this.renderContributorList(release.contributors)}`;
@@ -175,13 +177,15 @@ export default class MarkdownRenderer {
   }
 
   private groupByCategory(allCommits: CommitInfo[]): CategoryInfo[] {
-    return this.options.categories.map(name => {
-      // Keep only the commits that have a matching label with the one
-      // provided in the lerna.json config.
-      let commits = allCommits.filter(commit => commit.categories && commit.categories.indexOf(name) !== -1);
+    return this.options.categories
+      .map(name => {
+        // Keep only the commits that have a matching label with the one
+        // provided in the lerna.json config.
+        let commits = allCommits.filter(commit => commit.categories && commit.categories.indexOf(name) !== -1);
 
-      return { name, commits };
-    });
+        return { name, commits };
+      })
+      .filter(category => category.commits.length);
   }
 
   private groupBySectionAndCategory(allCommits: CommitInfo[]): SectionInfo[] {
