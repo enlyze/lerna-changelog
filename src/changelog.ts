@@ -242,7 +242,8 @@ export default class Changelog {
       const labels = commit.githubIssue.labels.map(label => label.name.toLowerCase());
 
       const filteredSections = labels.filter(label => Object.keys(this.config.sections).includes(label));
-      commit.section = filteredSections.length == 0 ? "default" : filteredSections[0];
+      commit.section =
+        filteredSections.length == 0 ? this.config.sections["default"] : this.config.sections[filteredSections[0]];
     }
   }
 
