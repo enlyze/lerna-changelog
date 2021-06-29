@@ -17,6 +17,7 @@ export interface Configuration {
   nextVersionFromMetadata?: boolean;
   title: string;
   description: string;
+  currentPR: string | null;
 }
 
 export interface ConfigLoaderOptions {
@@ -105,6 +106,7 @@ export function fromPath(rootPath: string, options: ConfigLoaderOptions = {}): C
     cacheDir,
     title,
     description,
+    currentPR: null,
   };
 }
 

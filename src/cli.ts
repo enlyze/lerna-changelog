@@ -23,6 +23,10 @@ export async function run() {
         type: "string",
         desc: "A git tag or commit hash that determines the upper bound of the range of commits",
       },
+      "current-pr": {
+        type: "string",
+        desc: "Include current PR in changelog, if run from a head branch",
+      },
       "tag-from": {
         hidden: true,
         type: "string",
@@ -74,6 +78,10 @@ export async function run() {
 
     if (!config.nextVersion && argv["next-version"]) {
       config.nextVersion = argv["next-version"];
+    }
+
+    if (argv["current-pr"]) {
+      config.currentPR = argv["current-pr"];
     }
 
     let result = await new Changelog(config).createMarkdown(options);
