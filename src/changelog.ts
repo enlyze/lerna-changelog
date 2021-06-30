@@ -53,10 +53,10 @@ export default class Changelog {
     await this.downloadIssueData(commitInfos);
 
     // Step 4: Fill in categories from remote labels (local)
-    this.fillInCategories(commitInfos);
+    await this.fillInCategories(commitInfos);
 
-    // Step 5: Fill in packages (local)
-    await this.fillInPackages(commitInfos);
+    // // Step 5: Fill in packages (local)
+    // await this.fillInPackages(commitInfos);
 
     // Step 6: Fill in sections (local)
     await this.fillInSections(commitInfos);
@@ -156,7 +156,21 @@ export default class Changelog {
   }
 
   private async downloadIssueData(commitInfos: CommitInfo[]) {
+    // Add current PR to issues if specified
+    this.config.currentPR &&
+      commitInfos.push({
+        commitSHA: "",
+        message: "",
+        tags: [],
+        date: "",
+        issueNumber: this.config.currentPR,
+        githubIssue: undefined,
+        categories: [],
+        packages: [],
+        section: "",
+      });
     progressBar.init("Downloading issue information…", commitInfos.length);
+
     await pMap(
       commitInfos,
       async (commitInfo: CommitInfo) => {
@@ -211,7 +225,6 @@ export default class Changelog {
       if (!commit.githubIssue || !commit.githubIssue.labels) continue;
 
       const labels = commit.githubIssue.labels.map(label => label.name.toLowerCase());
-
       commit.categories = Object.keys(this.config.labels)
         .filter(label => labels.indexOf(label.toLowerCase()) !== -1)
         .map(label => this.config.labels[label]);

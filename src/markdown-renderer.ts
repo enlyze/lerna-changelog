@@ -183,7 +183,6 @@ export default class MarkdownRenderer {
         // Keep only the commits that have a matching label with the one
         // provided in the lerna.json config.
         let commits = allCommits.filter(commit => commit.categories && commit.categories.indexOf(name) !== -1);
-
         return { name, commits };
       })
       .filter(category => category.commits.length);
