@@ -161,7 +161,7 @@ export default class Changelog {
       commitInfos.push({
         commitSHA: "",
         message: "",
-        tags: [],
+        tags: [UNRELEASED_TAG],
         date: "",
         issueNumber: this.config.currentPR,
         githubIssue: undefined,
