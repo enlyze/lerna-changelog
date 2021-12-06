@@ -1,5 +1,10 @@
 const execa = require("execa");
 
+export function getRootPath() {
+  const cwd = process.cwd();
+  return execa.sync("git", ["rev-parse", "--show-toplevel"], { cwd }).stdout;
+}
+
 export async function changedPaths(sha: string): Promise<string[]> {
   const result = await execa("git", ["show", "-m", "--name-only", "--pretty=format:", "--first-parent", sha]);
   return result.stdout.split("\n");
@@ -9,10 +14,7 @@ export async function changedPaths(sha: string): Promise<string[]> {
  * All existing tags in the repository
  */
 export function listTagNames(): string[] {
-  return execa
-    .sync("git", ["tag"])
-    .stdout.split("\n")
-    .filter(Boolean);
+  return execa.sync("git", ["tag"]).stdout.split("\n").filter(Boolean);
 }
 
 /**

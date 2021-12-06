@@ -4,6 +4,7 @@ const execa = require("execa");
 const hostedGitInfo = require("hosted-git-info");
 
 import ConfigurationError from "./configuration-error";
+import { getRootPath } from "./git";
 
 export interface Configuration {
   repo: string;
@@ -20,19 +21,22 @@ export interface Configuration {
 }
 
 export interface ConfigLoaderOptions {
+  repo?: string;
   nextVersionFromMetadata?: boolean;
 }
 
 export function load(options: ConfigLoaderOptions = {}): Configuration {
-  let cwd = process.cwd();
-  let rootPath = execa.sync("git", ["rev-parse", "--show-toplevel"], { cwd }).stdout;
-
+  let rootPath = getRootPath();
   return fromPath(rootPath, options);
 }
 
 export function fromPath(rootPath: string, options: ConfigLoaderOptions = {}): Configuration {
   // Step 1: load partial config from `package.json` or `lerna.json`
   let config = fromPackageConfig(rootPath) || fromLernaConfig(rootPath) || {};
+
+  if (options.repo) {
+    config.repo = options.repo;
+  }
 
   // Step 2: fill partial config with defaults
   let { repo, nextVersion, labels, cacheDir, ignoreCommitters, sections, title, description } = config;
@@ -72,6 +76,7 @@ export function fromPath(rootPath: string, options: ConfigLoaderOptions = {}): C
     ignoreCommitters = [
       "dependabot-bot",
       "dependabot[bot]",
+      "dependabot-preview[bot]",
       "greenkeeperio-bot",
       "greenkeeper[bot]",
       "renovate-bot",

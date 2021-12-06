@@ -3,11 +3,7 @@ module.exports = {
     es6: true,
     node: true,
   },
-  extends: [
-    "plugin:@typescript-eslint/eslint-recommended",
-    "prettier/@typescript-eslint",
-    "plugin:prettier/recommended",
-  ],
+  extends: ["plugin:@typescript-eslint/eslint-recommended", "plugin:prettier/recommended"],
   globals: {
     Atomics: "readonly",
     SharedArrayBuffer: "readonly",
@@ -18,5 +14,7 @@ module.exports = {
     sourceType: "module",
   },
   plugins: ["@typescript-eslint"],
-  rules: {},
+  rules: {
+    "prefer-const": "off",
+  },
 };

@@ -65,7 +65,7 @@ export default class MarkdownRenderer {
       }
     }
 
-    if (release.contributors) {
+    if (release.contributors?.length) {
       markdown += `\n\n${this.renderContributorList(release.contributors)}`;
     }
 
